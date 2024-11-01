@@ -4,11 +4,22 @@ namespace FinAlert.Common.Models
 {
     public class PriceAlert
     {
-        public int Id { get; set; }
-        public string Symbol { get; set; }
-        public decimal Price { get; set; }
-        public decimal Percent { get; set; }
+        public PriceAlert()
+        {
+            Id = Guid.NewGuid();
+            CreatedAt = UpdatedAt = System.DateTime.UtcNow;
+        }
+
+        public Guid Id { get; init; }
+        public Guid UserId { get; set; }
+        public string Symbol { get; set; } = string.Empty;
+        public decimal Threshold { get; set; }
         public AlertType AlertType { get; set; }
-        public string UserId { get; set; }
+        public TriggerType TriggerType { get; set; }
+        public bool Triggered { get; set; }
+        public bool Enabled { get; set; }
+        public DateTime CreatedAt { get; init; }
+        public DateTime UpdatedAt { get; set; }
+        public DateTime? TriggeredAt { get; set; }
     }
 }
