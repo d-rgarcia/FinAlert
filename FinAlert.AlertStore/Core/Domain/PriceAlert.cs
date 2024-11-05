@@ -1,6 +1,4 @@
-using FinAlert.Common.Enums;
-
-namespace FinAlert.Common.Models
+namespace FinAlert.AlertStore.Core.Domain
 {
     public class PriceAlert
     {
@@ -14,8 +12,8 @@ namespace FinAlert.Common.Models
         public Guid UserId { get; set; }
         public string Symbol { get; set; } = string.Empty;
         public decimal Threshold { get; set; }
-        public AlertType AlertType { get; set; }
-        public TriggerType TriggerType { get; set; }
+        public PriceAlertType AlertType { get; set; }
+        public PriceTriggerType TriggerType { get; set; }
         public bool Triggered { get; set; }
         public bool Enabled { get; set; }
         public DateTime CreatedAt { get; init; }

@@ -1,4 +1,4 @@
-namespace FinAlert.AlertStore.Exceptions;
+namespace FinAlert.AlertStore.Core.Exceptions;
 
 [Serializable]
 internal class AlertNotFoundException : Exception
