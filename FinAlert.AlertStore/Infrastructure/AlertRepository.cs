@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace FinAlert.AlertStore.Infrastructure;
 
-public class AlertRepository : IAlertRepository
+internal class AlertRepository : IAlertRepository
 {
     private readonly AlertDbContext _dbContext;
     private readonly ILogger<AlertRepository> _logger;
