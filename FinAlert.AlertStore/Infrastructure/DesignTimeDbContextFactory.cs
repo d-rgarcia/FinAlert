@@ -11,7 +11,7 @@ public class AlertDbContextFactory : IDesignTimeDbContextFactory<AlertDbContext>
     public AlertDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<AlertDbContext>();
-        optionsBuilder.UseNpgsql("Host=localhost;Database=StockAlert;Username=postgres;Password=Admin123");
+        optionsBuilder.UseNpgsql("Host=localhost;Database=StockAlertStore;Username=postgres;Password=Admin123");
 
         var logger = new LoggerFactory().CreateLogger<AlertDbContext>();
 

@@ -1,3 +1,9 @@
+using FinAlert.Identity.Core.Domain;
+using FinAlert.Identity.Infrastructure;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.VisualBasic;
+using FinAlert.AlertStore.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,6 +12,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
+
+string alertsConnectionString = builder.Configuration.GetConnectionString("AlertsDb") ??
+    throw new ArgumentNullException("Alerts connection string is required");
+
+builder.Services.AddAlertServices(alertsConnectionString);
 
 var app = builder.Build();
 
@@ -17,6 +28,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

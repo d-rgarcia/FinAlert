@@ -1,5 +1,4 @@
-using FinAlert.Common.Models;
-using Microsoft.AspNetCore.Http;
+using FinAlert.AlertStore.Core.Domain;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinAlert.StockAlertApi.Controllers
