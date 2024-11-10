@@ -1,8 +1,5 @@
-using FinAlert.Identity.Core.Domain;
-using FinAlert.Identity.Infrastructure;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.VisualBasic;
 using FinAlert.AlertStore.Extensions;
+using FinAlert.Identity.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +9,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
+
+string identityConnectionString = builder.Configuration.GetConnectionString("IdentityDb") ??
+    throw new ArgumentNullException("Identity connection string is required");
+
+builder.Services.AddIdentityServices(identityConnectionString);
 
 string alertsConnectionString = builder.Configuration.GetConnectionString("AlertsDb") ??
     throw new ArgumentNullException("Alerts connection string is required");
