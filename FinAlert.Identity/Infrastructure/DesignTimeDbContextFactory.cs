@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-public class IndentityContextFactory : IDesignTimeDbContextFactory<IndentityContext>
+public class IndentityContextFactory : IDesignTimeDbContextFactory<IdentityContext>
 {
-    public IndentityContext CreateDbContext(string[] args)
+    public IdentityContext CreateDbContext(string[] args)
     {
         var aspnetEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
@@ -16,13 +16,13 @@ public class IndentityContextFactory : IDesignTimeDbContextFactory<IndentityCont
             .AddJsonFile($"appsettings.{aspnetEnvironment}.json", optional: true)
             .Build();
 
-        var optionsBuilder = new DbContextOptionsBuilder<IndentityContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<IdentityContext>();
         optionsBuilder.UseNpgsql(configuration.GetConnectionString("IdentityDb"));
 
         var logger = new LoggerFactory();
         
         optionsBuilder.UseLoggerFactory(logger);
         
-        return new IndentityContext(optionsBuilder.Options);
+        return new IdentityContext(optionsBuilder.Options);
     }
 }

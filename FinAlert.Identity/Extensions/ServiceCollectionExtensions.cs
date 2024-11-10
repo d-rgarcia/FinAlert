@@ -10,7 +10,7 @@ public static class ServiceCollectionExtensions
 {
     public static void AddIdentityServices(this IServiceCollection services, string connectionString)
     {
-        services.AddDbContext<IndentityContext>(options =>
+        services.AddDbContext<IdentityContext>(options =>
             options.UseNpgsql(connectionString));
 
         services.AddIdentity<User, IdentityRole>(options =>
@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
             options.Password.RequiredLength = 8;
             options.User.RequireUniqueEmail = true;
         })
-        .AddEntityFrameworkStores<IndentityContext>()
+        .AddEntityFrameworkStores<IdentityContext>()
         .AddDefaultTokenProviders();
     }
 }

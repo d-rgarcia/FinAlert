@@ -14,4 +14,16 @@ public class AlertDbContext : DbContext
     {
         _logger = logger;
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<PriceAlert>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.UserId);
+        });
+    }
+
 }

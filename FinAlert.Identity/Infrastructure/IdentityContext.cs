@@ -1,12 +1,13 @@
 using FinAlert.Identity.Core.Domain;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinAlert.Identity.Infrastructure;
 
-public class IndentityContext : IdentityDbContext<User>
+public class IdentityContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
-    public IndentityContext(DbContextOptions<IndentityContext> options) : base(options)
+    public IdentityContext(DbContextOptions<IdentityContext> options) : base(options)
     {
     }
 }
