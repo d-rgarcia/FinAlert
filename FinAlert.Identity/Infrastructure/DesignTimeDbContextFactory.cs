@@ -1,15 +1,12 @@
-using FinAlert.AlertStore.Infrastructure;
+using FinAlert.Identity.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-/// <summary>
-/// Used for EF CLI tooling to create migrations
-/// </summary>
-public class AlertDbContextFactory : IDesignTimeDbContextFactory<AlertDbContext>
+public class IndentityContextFactory : IDesignTimeDbContextFactory<IndentityContext>
 {
-    public AlertDbContext CreateDbContext(string[] args)
+    public IndentityContext CreateDbContext(string[] args)
     {
         var aspnetEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
@@ -19,12 +16,13 @@ public class AlertDbContextFactory : IDesignTimeDbContextFactory<AlertDbContext>
             .AddJsonFile($"appsettings.{aspnetEnvironment}.json", optional: true)
             .Build();
 
-        var optionsBuilder = new DbContextOptionsBuilder<AlertDbContext>();
-        optionsBuilder.UseNpgsql(configuration.GetConnectionString("AlertDb"));
+        var optionsBuilder = new DbContextOptionsBuilder<IndentityContext>();
+        optionsBuilder.UseNpgsql(configuration.GetConnectionString("IdentityDb"));
 
         var logger = new LoggerFactory();
+        
         optionsBuilder.UseLoggerFactory(logger);
-
-        return new AlertDbContext(optionsBuilder.Options, logger.CreateLogger<AlertDbContext>());
+        
+        return new IndentityContext(optionsBuilder.Options);
     }
 }
