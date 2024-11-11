@@ -9,7 +9,7 @@ public class PriceAlertService : IPriceAlertService
     private readonly IAlertRepository _alertRepository;
     private readonly ILogger<PriceAlertService> _logger;
 
-    internal PriceAlertService(IAlertRepository alertRepository, ILogger<PriceAlertService> logger)
+    public PriceAlertService(IAlertRepository alertRepository, ILogger<PriceAlertService> logger)
     {
         _alertRepository = alertRepository;
         _logger = logger;

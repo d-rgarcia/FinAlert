@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<IdentityContext>(options =>
             options.UseNpgsql(connectionString));
 
-        services.AddIdentity<User, IdentityRole>(options =>
+        services.AddIdentity<User, IdentityRole<Guid>>(options =>
         {
             options.Password.RequireDigit = true;
             options.Password.RequiredLength = 8;

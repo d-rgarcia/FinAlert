@@ -2,7 +2,7 @@ using FinAlert.AlertStore.Core.Domain;
 
 namespace FinAlert.AlertStore.Core.Contracts;
 
-internal interface IAlertRepository
+public interface IAlertRepository
 {
     Task AddPriceAlertAsync(PriceAlert alert);
     Task DeletePriceAlertAsync(Guid id);

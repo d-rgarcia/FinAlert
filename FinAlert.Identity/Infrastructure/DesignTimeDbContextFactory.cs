@@ -12,8 +12,8 @@ public class IndentityContextFactory : IDesignTimeDbContextFactory<IdentityConte
 
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile($"appsettings.json", optional: false)
-            .AddJsonFile($"appsettings.{aspnetEnvironment}.json", optional: true)
+            .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: false)
+            .AddJsonFile($"appsettings.{aspnetEnvironment}.json", optional: true, reloadOnChange: false)
             .Build();
 
         var optionsBuilder = new DbContextOptionsBuilder<IdentityContext>();
