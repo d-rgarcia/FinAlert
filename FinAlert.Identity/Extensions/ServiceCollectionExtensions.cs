@@ -18,6 +18,9 @@ public static class ServiceCollectionExtensions
             options.Password.RequireDigit = true;
             options.Password.RequiredLength = 8;
             options.User.RequireUniqueEmail = true;
+            options.SignIn.RequireConfirmedEmail = false;
+            options.SignIn.RequireConfirmedPhoneNumber = false;
+            options.SignIn.RequireConfirmedAccount = false;
         })
         .AddEntityFrameworkStores<IdentityContext>()
         .AddDefaultTokenProviders();

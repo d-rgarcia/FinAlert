@@ -20,7 +20,7 @@ public class AlertDbContextFactory : IDesignTimeDbContextFactory<AlertDbContext>
             .Build();
 
         var optionsBuilder = new DbContextOptionsBuilder<AlertDbContext>();
-        optionsBuilder.UseNpgsql(configuration.GetConnectionString("AlertDb"));
+        optionsBuilder.UseNpgsql(configuration.GetConnectionString("AlertsDb"));
 
         var logger = new LoggerFactory();
         optionsBuilder.UseLoggerFactory(logger);

@@ -1,10 +1,11 @@
+using System.Security.Claims;
 using FinAlert.AlertStore.Core.Domain;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinAlert.StockAlertApi.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class StockPriceController : ControllerBase
     {
         private readonly ILogger<StockPriceController> _logger;
@@ -17,6 +18,7 @@ namespace FinAlert.StockAlertApi.Controllers
         [HttpGet]
         public IActionResult GetAllAlerts()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return Ok();
         }
 
