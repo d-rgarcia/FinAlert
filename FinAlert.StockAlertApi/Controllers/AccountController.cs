@@ -50,7 +50,7 @@ public class AccountController : ControllerBase
             if (result.Succeeded)
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                
+
                 return Ok("User created successfully");
             }
             else
@@ -61,6 +61,40 @@ public class AccountController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating user");
+
+            return StatusCode(500);
+        }
+    }
+
+    [HttpPost("changepassword")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel model)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user is null)
+                return BadRequest("Invalid email or password");
+            if (!await _userManager.CheckPasswordAsync(user, model.OldPassword))
+                return BadRequest("Invalid email or password");
+            if (model.NewPassword != model.ConfirmNewPassword)
+                return BadRequest("Passwords do not match");
+
+            var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+            if (result.Succeeded)
+            {
+                return Ok("Password changed successfully");
+            }
+            else
+            {
+                return BadRequest(result.Errors.Select(e => e.Description));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error changing password");
 
             return StatusCode(500);
         }
@@ -84,16 +118,46 @@ public class AccountController : ControllerBase
             var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
             if (result.Succeeded)
             {
+                return Ok("Logged in successfully");
+            }
+            else
+            {
+                return generateSignInResponse(result);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error signing in user");
+
+            return StatusCode(500);
+        }
+    }
+
+    [AllowAnonymous]
+    [HttpPost("token")]
+    public async Task<IActionResult> GetToken([FromBody] LoginModel model)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user is null)
+                return BadRequest("Invalid email or password");
+            if (!await _userManager.CheckPasswordAsync(user, model.Password))
+                return BadRequest("Invalid email or password");
+
+            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
+            if (result.Succeeded)
+            {
                 var token = createJwtToken(user);
 
                 return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
             }
             else
             {
-                if (result.IsLockedOut)
-                    return BadRequest("Account is locked out");
-                else
-                    return BadRequest("Invalid login");
+                return generateSignInResponse(result);
             }
         }
         catch (Exception ex)
@@ -120,9 +184,12 @@ public class AccountController : ControllerBase
         return Ok();
     }
 
+    #region private methods
+
     private JwtSecurityToken createJwtToken(User user)
     {
         ArgumentNullException.ThrowIfNull(user, nameof(user));
+        ArgumentNullException.ThrowIfNullOrEmpty(user.Email, nameof(user));
 
         var claims = new[]
         {
@@ -144,4 +211,16 @@ public class AccountController : ControllerBase
         return token;
     }
 
+    private IActionResult generateSignInResponse(Microsoft.AspNetCore.Identity.SignInResult result)
+    {
+        if (result.IsLockedOut)
+            return BadRequest("User account is locked out.");
+        if (result.IsNotAllowed)
+            return BadRequest("User is not allowed to sign in.");
+        if (result.RequiresTwoFactor)
+            return BadRequest("Two-factor authentication is required.");
+
+        return BadRequest("Invalid login attempt.");
+    }
+    #endregion
 }
