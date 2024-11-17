@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using FinAlert.AlertStore.Core.Contracts;
 using FinAlert.AlertStore.Core.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -48,6 +47,6 @@ namespace FinAlert.StockAlertApi.Controllers
         public IActionResult DeleteAlert(int id)
         {
             return Ok();
-        }        
+        }
     }
 }

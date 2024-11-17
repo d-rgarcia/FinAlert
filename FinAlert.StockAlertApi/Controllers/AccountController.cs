@@ -110,15 +110,15 @@ public class AccountController : ControllerBase
         try
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
-        if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
+            if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
                 return BadRequest("Invalid email or password");
 
             var result = await _signInManager.PasswordSignInAsync(
-                model.Email, 
-                model.Password, 
-                isPersistent: false, 
+                model.Email,
+                model.Password,
+                isPersistent: false,
                 lockoutOnFailure: false);
-                
+
             if (result.Succeeded)
             {
                 return Ok("Logged in successfully");
@@ -130,8 +130,8 @@ public class AccountController : ControllerBase
         }
         catch (Exception ex)
         {
-        _logger.LogError(ex, "Error during login");
-        return StatusCode(500, "An unexpected error occurred.");
+            _logger.LogError(ex, "Error during login");
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
@@ -148,8 +148,8 @@ public class AccountController : ControllerBase
             if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
                 return BadRequest("Invalid email or password");
 
-                var token = createJwtToken(user);
-                return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+            var token = createJwtToken(user);
+            return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
         }
         catch (Exception ex)
         {
