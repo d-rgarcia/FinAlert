@@ -110,9 +110,7 @@ public class AccountController : ControllerBase
         try
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user is null)
-                return BadRequest("Invalid email or password");
-            if (!await _userManager.CheckPasswordAsync(user, model.Password))
+        if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
                 return BadRequest("Invalid email or password");
 
             var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
@@ -127,9 +125,8 @@ public class AccountController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error signing in user");
-
-            return StatusCode(500);
+        _logger.LogError(ex, "Error during login");
+        return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
@@ -143,28 +140,16 @@ public class AccountController : ControllerBase
         try
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user is null)
-                return BadRequest("Invalid email or password");
-            if (!await _userManager.CheckPasswordAsync(user, model.Password))
+            if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
                 return BadRequest("Invalid email or password");
 
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
-            if (result.Succeeded)
-            {
                 var token = createJwtToken(user);
-
                 return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
-            }
-            else
-            {
-                return generateSignInResponse(result);
-            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error signing in user");
-
-            return StatusCode(500);
+            _logger.LogError(ex, "Error generating token");
+            return StatusCode(500, "An unexpected error occurred.");
         }
     }
 
