@@ -113,7 +113,12 @@ public class AccountController : ControllerBase
         if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
                 return BadRequest("Invalid email or password");
 
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(
+                model.Email, 
+                model.Password, 
+                isPersistent: false, 
+                lockoutOnFailure: false);
+                
             if (result.Succeeded)
             {
                 return Ok("Logged in successfully");
@@ -159,6 +164,8 @@ public class AccountController : ControllerBase
         try
         {
             await _signInManager.SignOutAsync();
+
+            return Ok("Logged out successfully");
         }
         catch (Exception ex)
         {
@@ -190,7 +197,7 @@ public class AccountController : ControllerBase
             _configuration["Jwt:Issuer"],
             _configuration["Jwt:Audience"],
             claims,
-            expires: DateTime.Now.AddMinutes(30),
+            expires: DateTime.Now.AddMinutes(_configuration.GetValue<int>("Jwt:ExpiresInMinutes")),
             signingCredentials: credentials);
 
         return token;
