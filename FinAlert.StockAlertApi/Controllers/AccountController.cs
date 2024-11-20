@@ -173,7 +173,6 @@ public class AccountController : ControllerBase
 
             return StatusCode(500);
         }
-        return Ok();
     }
 
     #region private methods

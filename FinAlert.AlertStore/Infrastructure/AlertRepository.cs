@@ -27,24 +27,28 @@ internal class AlertRepository : IAlertRepository
         return await _dbContext.PriceAlerts.Where(a => a.UserId == userId && a.Enabled).ToListAsync();
     }
 
-    public async Task<PriceAlert?> GetPriceAlertAsync(Guid id)
+    public async Task<PriceAlert?> GetPriceAlertAsync(Guid userId, Guid alertId)
     {
-        return await _dbContext.PriceAlerts.FindAsync(id);
+        var alert = await _dbContext.PriceAlerts.FindAsync(alertId);
+        if (alert?.UserId != userId)
+            return null;
+
+        return alert;
     }
 
     public async Task AddPriceAlertAsync(PriceAlert alert)
     {
         ArgumentNullException.ThrowIfNull(alert);
 
-        _dbContext.PriceAlerts.Add(alert);
+        await _dbContext.PriceAlerts.AddAsync(alert);
 
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task UpdatePriceAlertAsync(Guid alertId, PriceAlertType alertType, PriceTriggerType triggerType, decimal threshold)
+    public async Task UpdatePriceAlertAsync(Guid userId, Guid alertId, PriceAlertType alertType, PriceTriggerType triggerType, decimal threshold)
     {
         var existingAlert = await _dbContext.PriceAlerts.FindAsync(alertId);
-        if (existingAlert is null)
+        if (existingAlert is null || existingAlert.UserId != userId)
             throw new AlertNotFoundException($"Alert with id {alertId} not found");
 
         existingAlert.UpdatedAt = DateTime.UtcNow;
@@ -55,21 +59,21 @@ internal class AlertRepository : IAlertRepository
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task TriggerPriceAlertAsync(Guid id)
+    public async Task TriggerPriceAlertAsync(Guid userId, Guid alertId)
     {
-        var alert = _dbContext.PriceAlerts.Find(id);
-        if (alert is null)
-            throw new AlertNotFoundException($"Alert with id {id} not found");
+        var alert = _dbContext.PriceAlerts.Find(alertId);
+        if (alert is null || alert.UserId != userId)
+            throw new AlertNotFoundException($"Alert with id {alertId} not found");
 
         if (alert.Triggered)
         {
-            _logger.LogInformation("Alert with id {AlertId} already triggered", id);
+            _logger.LogInformation("Alert with id {AlertId} already triggered", alertId);
 
             return;
         }
 
         if (!alert.Enabled)
-            throw new InvalidOperationException($"Alert {id} is disabled");
+            throw new InvalidOperationException($"Alert {alertId} is disabled");
 
         alert.Enabled = false;
         alert.Triggered = true;
@@ -78,17 +82,17 @@ internal class AlertRepository : IAlertRepository
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task EnablePriceAlertAsync(Guid id)
+    public async Task EnablePriceAlertAsync(Guid userId, Guid alertId)
     {
-        var alert = _dbContext.PriceAlerts.Find(id);
-        if (alert is null)
-            throw new AlertNotFoundException($"Alert with id {id} not found");
+        var alert = _dbContext.PriceAlerts.Find(alertId);
+        if (alert is null || alert.UserId != userId)
+            throw new AlertNotFoundException($"Alert with id {alertId} not found");
 
         if (alert.Enabled)
             return;
 
         if (alert.Triggered)
-            _logger.LogInformation("Activating alert with id {AlertId}, previously triggered at {AlertTriggeredAt}", id, alert.TriggeredAt);
+            _logger.LogInformation("Activating alert with id {AlertId}, previously triggered at {AlertTriggeredAt}", alertId, alert.TriggeredAt);
 
         alert.Enabled = true;
         alert.Triggered = false;
@@ -98,11 +102,11 @@ internal class AlertRepository : IAlertRepository
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task DisablePriceAlertAsync(Guid id)
+    public async Task DisablePriceAlertAsync(Guid userId, Guid alertId)
     {
-        var alert = _dbContext.PriceAlerts.Find(id);
-        if (alert is null)
-            throw new AlertNotFoundException($"Alert with id {id} not found");
+        var alert = _dbContext.PriceAlerts.Find(alertId);
+        if (alert is null || alert.UserId != userId)
+            throw new AlertNotFoundException($"Alert with id {alertId} not found");
 
         if (!alert.Enabled)
             return;
@@ -113,17 +117,18 @@ internal class AlertRepository : IAlertRepository
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task DeletePriceAlertAsync(Guid id)
+    public async Task DeletePriceAlertAsync(Guid userId, Guid alertId)
     {
-        var alert = await _dbContext.PriceAlerts.FindAsync(id);
-        if (alert is null)
+        var alert = await _dbContext.PriceAlerts.FindAsync(alertId);
+        if (alert is null || alert.UserId != userId)
         {
-            _logger.LogInformation("Alert with id {Id} already deleted", id);
+            _logger.LogInformation("Alert with id {Id} already deleted", alertId);
 
             return;
         }
 
         _dbContext.PriceAlerts.Remove(alert);
+
         await _dbContext.SaveChangesAsync();
     }
 }
