@@ -13,4 +13,10 @@ public interface IPriceAlertService
     Task DisableAlertAsync(Guid userId, Guid alertId);
     Task TriggerAlertAsync(Guid userId, Guid alertId);
     Task UpdateAlertAsync(Guid userId, Guid alertId, PriceAlertType alertType, PriceTriggerType triggerType, decimal threshold);
+
+    #region PriceAlerts
+
+    Task<IEnumerable<PriceAlert>> GetEnabledAlertsAsync();
+    
+    #endregion
 }

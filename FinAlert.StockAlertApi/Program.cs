@@ -1,6 +1,9 @@
 using System.Text;
 using FinAlert.AlertStore.Extensions;
+using FinAlert.AlertStore.Services;
 using FinAlert.Identity.Extensions;
+using FinAlert.StockAlertApi.Options;
+using FinAlert.StockQueryService.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -34,6 +37,10 @@ string alertsConnectionString = builder.Configuration.GetConnectionString("Alert
     throw new ArgumentNullException("Alerts connection string is required");
 
 builder.Services.AddAlertServices(alertsConnectionString);
+builder.Services.AddStockQueryService();
+
+builder.Services.Configure<AlertMonitorOptions>(builder.Configuration.GetSection(nameof(AlertMonitorOptions)));
+builder.Services.AddHostedService<AlertBackgroundService>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

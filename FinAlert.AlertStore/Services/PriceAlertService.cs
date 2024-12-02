@@ -152,4 +152,22 @@ public class PriceAlertService : IPriceAlertService
             throw;
         }
     }
+
+    #region PriceAlerts
+
+    public async Task<IEnumerable<PriceAlert>> GetEnabledAlertsAsync()
+    {
+        try
+        {
+            return await _alertRepository.GetEnabledPriceAlertsAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting enabled alerts");
+
+            throw;
+        }
+    }
+
+    #endregion
 }

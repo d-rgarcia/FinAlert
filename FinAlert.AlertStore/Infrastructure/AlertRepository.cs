@@ -131,4 +131,13 @@ internal class AlertRepository : IAlertRepository
 
         await _dbContext.SaveChangesAsync();
     }
+
+    #region PriceAlerts
+
+    public async Task<IEnumerable<PriceAlert>> GetEnabledPriceAlertsAsync()
+    {
+        return await _dbContext.PriceAlerts.Where(a => a.Enabled).ToListAsync();
+    }
+
+    #endregion
 }

@@ -17,7 +17,8 @@ public interface IAlertRepository
     #endregion
 
     #region PriceAlerts
-    // This section is for the PriceAlerts that are not associated with a user and should be triggered by a background service
+
+    Task<IEnumerable<PriceAlert>> GetEnabledPriceAlertsAsync();
 
     #endregion
 }

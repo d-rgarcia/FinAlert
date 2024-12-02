@@ -27,6 +27,9 @@ public class YahooQueryService : IStockQueryService
         _authenticator = yahooAuthenticator;
     }
 
+    // TODO: StopWatch for logging times.
+    // TODO: Unauthorized codes, retry Cookies/Crumb.
+
     public async Task<StockPrice> GetCurrentPriceAsync(string symbol)
     {
         await _authenticator.EnsureAuthenticationAsync();
