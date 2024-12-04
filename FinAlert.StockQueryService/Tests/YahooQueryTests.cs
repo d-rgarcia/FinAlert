@@ -12,11 +12,10 @@ public class YahooQueryTests
     public async Task YahooQueryService_GetStockPrice_ReturnsPrice()
     {
         var httpClient = new HttpClient();
-        var logger = Mock.Of<ILogger<YahooQueryService>>();
 
-        IYahooFinanceAuthenticator yahooAuth = new YahooFinanceAuthenticator(httpClient);
+        IYahooFinanceAuthenticator yahooAuth = new YahooFinanceAuthenticator(httpClient, Mock.Of<ILogger<YahooFinanceAuthenticator>>());
 
-        var queryService = new YahooQueryService(httpClient, yahooAuth, logger);
+        var queryService = new YahooQueryService(httpClient, yahooAuth, Mock.Of<ILogger<YahooQueryService>>());
 
         var price = await queryService.GetCurrentPriceAsync("AAPL");
     }
