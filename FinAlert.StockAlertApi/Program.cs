@@ -9,9 +9,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
-// Remove:
-Environment.SetEnvironmentVariable("DOTNET_hostBuilder:reloadConfigOnChange", "false");
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -107,6 +104,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseStaticFiles();
 
 app.UseExceptionHandler();
 

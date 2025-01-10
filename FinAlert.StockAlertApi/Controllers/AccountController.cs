@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using FinAlert.Identity.Core.Domain;
 using FinAlert.StockAlertApi.Models;
+using FinAlert.StockAlertApi.Models.HttpResponse;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -32,13 +33,14 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            return BadRequest(modelValidationErrors());
+
         try
         {
             if (await _userManager.FindByEmailAsync(model.Email) != null)
-                return BadRequest("User with this email already exists");
+                return Conflict(ResponseResult.Failure("User with this email already exists"));
             if (model.Password != model.ConfirmPassword)
-                return BadRequest("Passwords do not match");
+                return BadRequest(ResponseResult.Failure("Passwords do not match"));
 
             var user = new User
             {
@@ -51,7 +53,7 @@ public class AccountController : ControllerBase
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);
 
-                return Ok("User created successfully");
+                return Ok(ResponseResult.Success());
             }
             else
             {
@@ -62,7 +64,7 @@ public class AccountController : ControllerBase
         {
             _logger.LogError(ex, "Error creating user");
 
-            return StatusCode(500);
+            return StatusCode(500, ResponseResult.Failure("Error registering user"));
         }
     }
 
@@ -70,22 +72,22 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel model)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            return BadRequest(modelValidationErrors());
 
         try
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user is null)
-                return BadRequest("Invalid email or password");
+                return Unauthorized(ResponseResult.Failure("Invalid email or password"));
             if (!await _userManager.CheckPasswordAsync(user, model.OldPassword))
-                return BadRequest("Invalid email or password");
+                return Unauthorized(ResponseResult.Failure("Invalid email or password"));
             if (model.NewPassword != model.ConfirmNewPassword)
-                return BadRequest("Passwords do not match");
+                return BadRequest(ResponseResult.Failure("Passwords do not match"));
 
             var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
             if (result.Succeeded)
             {
-                return Ok("Password changed successfully");
+                return Ok(ResponseResult.Success());
             }
             else
             {
@@ -96,7 +98,7 @@ public class AccountController : ControllerBase
         {
             _logger.LogError(ex, "Error changing password");
 
-            return StatusCode(500);
+            return StatusCode(500, ResponseResult.Failure("Error changing password"));
         }
     }
 
@@ -105,13 +107,15 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            return BadRequest(modelValidationErrors());
 
         try
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
-                return BadRequest("Invalid email or password");
+            {
+                return BadRequest(ResponseResult.Failure("Invalid email or password"));
+            }
 
             var result = await _signInManager.PasswordSignInAsync(
                 model.Email,
@@ -121,17 +125,17 @@ public class AccountController : ControllerBase
 
             if (result.Succeeded)
             {
-                return Ok("Logged in successfully");
+                return Ok(ResponseResult.Success());
             }
             else
             {
-                return generateSignInResponse(result);
+                return BadRequest(generateSignInResponse(result));
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during login");
-            return StatusCode(500, "An unexpected error occurred.");
+            return StatusCode(500, ResponseResult.Failure("An unexpected error occurred"));
         }
     }
 
@@ -140,21 +144,22 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> GetToken([FromBody] LoginModel model)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            return BadRequest(modelValidationErrors());
 
         try
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user is null || !await _userManager.CheckPasswordAsync(user, model.Password))
-                return BadRequest("Invalid email or password");
+                return Unauthorized(ResponseResult.Failure("Invalid email or password"));
 
             var token = createJwtToken(user);
-            return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+
+            return Ok(ResponseResult.Success(new { token = new JwtSecurityTokenHandler().WriteToken(token) }));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error generating token");
-            return StatusCode(500, "An unexpected error occurred.");
+            return StatusCode(500, ResponseResult.Failure("Error generating token"));
         }
     }
 
@@ -165,13 +170,13 @@ public class AccountController : ControllerBase
         {
             await _signInManager.SignOutAsync();
 
-            return Ok("Logged out successfully");
+            return Ok(ResponseResult.Success());
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error signing out user");
 
-            return StatusCode(500);
+            return StatusCode(500, ResponseResult.Failure("Error while loging out"));
         }
     }
 
@@ -202,16 +207,25 @@ public class AccountController : ControllerBase
         return token;
     }
 
-    private IActionResult generateSignInResponse(Microsoft.AspNetCore.Identity.SignInResult result)
+    private ResponseResult generateSignInResponse(Microsoft.AspNetCore.Identity.SignInResult result)
     {
         if (result.IsLockedOut)
-            return BadRequest("User account is locked out.");
+            return ResponseResult.Failure("User account is locked out.");
         if (result.IsNotAllowed)
-            return BadRequest("User is not allowed to sign in.");
+            return ResponseResult.Failure("User is not allowed to sign in.");
         if (result.RequiresTwoFactor)
-            return BadRequest("Two-factor authentication is required.");
+            return ResponseResult.Failure("Two-factor authentication is required.");
 
-        return BadRequest("Invalid login attempt.");
+        return ResponseResult.Failure("Invalid login attempt.");
+    }
+
+    private ResponseResult modelValidationErrors()
+    {
+        var validationErrors = ModelState.Values
+            .SelectMany(v => v.Errors.Select(e => e.ErrorMessage))
+            .ToList();
+
+        return ResponseResult.Failure(validationErrors);
     }
     #endregion
 }
