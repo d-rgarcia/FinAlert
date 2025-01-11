@@ -4,6 +4,7 @@ using System.Text;
 using FinAlert.Identity.Core.Domain;
 using FinAlert.StockAlertApi.Models;
 using FinAlert.StockAlertApi.Models.HttpResponse;
+using FinAlert.StockQueryService.Core.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -161,6 +162,53 @@ public class AccountController : ControllerBase
             _logger.LogError(ex, "Error generating token");
             return StatusCode(500, ResponseResult.Failure("Error generating token"));
         }
+    }
+
+    [AllowAnonymous]
+    [HttpGet("login-google")]
+    public IActionResult LoginWithGoogle()
+    {
+        var redirectUrl = Url.Action("GoogleSignIn", "Account");
+        var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+        return Challenge(properties, "Google");
+    }
+
+    [AllowAnonymous]
+    [HttpGet("signin-google")]
+    public async Task<IActionResult> GoogleSignIn()
+    {
+        var info = await _signInManager.GetExternalLoginInfoAsync();
+        if (info == null)
+        {
+            return StatusCode(500, ResponseResult.Failure("An unexpected error occurred"));
+        }
+
+        var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false);
+        if (result.Succeeded)
+        {
+            return Redirect("/");
+        }
+
+        var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+        if (email != null)
+        {
+            var user = new User
+            {
+                UserName = email,
+                Email = email
+            };
+            
+            var createdResult = await _userManager.CreateAsync(user);
+            if(createdResult.Succeeded)
+            {
+                await _userManager.AddLoginAsync(user, info);
+                await _signInManager.SignInAsync(user, false);
+
+                return Ok(ResponseResult.Success());
+            }
+        }
+
+        return BadRequest(generateSignInResponse(result));
     }
 
     [HttpPost("logout")]
