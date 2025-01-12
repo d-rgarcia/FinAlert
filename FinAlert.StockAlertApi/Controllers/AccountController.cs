@@ -168,14 +168,14 @@ public class AccountController : ControllerBase
     [HttpGet("login-google")]
     public IActionResult LoginWithGoogle()
     {
-        var redirectUrl = Url.Action("GoogleSignIn", "Account");
+        var redirectUrl = Url.Action("GoogleResponse", "Account");
         var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
         return Challenge(properties, "Google");
     }
 
     [AllowAnonymous]
-    [HttpGet("signin-google")]
-    public async Task<IActionResult> GoogleSignIn()
+    [HttpGet("google-response")]
+    public async Task<IActionResult> GoogleResponse()
     {
         var info = await _signInManager.GetExternalLoginInfoAsync();
         if (info == null)
@@ -186,7 +186,7 @@ public class AccountController : ControllerBase
         var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false);
         if (result.Succeeded)
         {
-            return Redirect("/");
+            return Ok(ResponseResult.Success());
         }
 
         var email = info.Principal.FindFirstValue(ClaimTypes.Email);

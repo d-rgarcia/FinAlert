@@ -65,10 +65,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = "JwtAndIdentityCookies";
-    options.DefaultChallengeScheme = "JwtAndIdentityCookies";
-})
+    {
+        options.DefaultAuthenticateScheme = "JwtAndIdentityCookies";
+        options.DefaultChallengeScheme = "JwtAndIdentityCookies";
+    })
+    .AddGoogle(options => {
+        options.ClientId =  builder.Configuration["Authentication:Google:ClientId"]!;
+        options.ClientSecret =  builder.Configuration["Authentication:Google:ClientSecret"]!;
+    })
     .AddPolicyScheme("JwtAndIdentityCookies", "Authorize with JWT or Identity Cookies", options =>
     {
         options.ForwardDefaultSelector = context =>
